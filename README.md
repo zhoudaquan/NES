@@ -1,10 +1,10 @@
 # Neural Epitome Search For Architecture Agnistic Compression [ICLR_2020](https://openreview.net/forum?id=HyxjOyrKvr)
 
 ## Introduction
-This repo contains the code for the model compression chanllenge Hosted at [ICLR_2020](https://micronet-challenge.github.io/scoring_and_submission.html) regarding the ImageNet classification track.
+This repo contains the code for the model compression chanllenge Hosted at  regarding the ImageNet classification track.
 
 Combine with other compression methods:
-## Join the ImageNet Challenge competition:
+## Join the ImageNet Challenge competition [NeruIPS_2019](https://micronet-challenge.github.io/scoring_and_submission.html):
 The compression method is mainly based on the paper [NES](https://openreview.net/forum?id=HyxjOyrKvr) where we apply the transformation on the fully connected 1x1 convolution layers with a compression ratio of 2x. Besides, we also apply group convolution on SE blocks to further reduce the parameter number and the computation complexity. During the whole quantization process, no quantization is performed and no specialized hardware support is needed.
 
 The resulting model specification is as below:
