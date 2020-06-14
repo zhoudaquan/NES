@@ -1,0 +1,3 @@
+NUM_PROC=$1
+shift
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.launch --nproc_per_node=$NUM_PROC train.py "$@"  ../../imagenet/ILSVRC/Data/CLS-LOC/ --model efficientnet_b0_dq --num-gpu 1 -j 80 --lr 0.12 --drop 0.2 --img-size 224 --sched step --epochs 650 --decay-epochs 1 --decay-rate 0.97 --opt rmsproptf --warmup-epochs 5 --warmup-lr 1e-6 --weight-decay 1e-5 --opt-eps .001 --batch-size 236 --log-interval 500 --fc_compress "fully_fc" --enable_se --group_se --up_sampling_ratio 1.0  --model-ema --resume /home/e0357894/WSNet_improvement/efficientnet_repo/pytorch-image-models/output/train/74_97_model/model_best.pth.tar --sampling --start-epoch 445 --display-info
