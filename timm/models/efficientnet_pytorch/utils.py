@@ -1,8 +1,3 @@
-"""
-This file contains helper functions for building the model and for loading model parameters.
-These helper functions are built to mirror those in the official TensorFlow implementation.
-"""
-
 import re
 import numpy as np
 import pdb
@@ -89,163 +84,6 @@ class Conv2dSamePadding(nn.Conv2d):
         self.nbits = nbit
         self.ceil = math.ceil
         bit_dims = [nbit, in_channels]
-        # self.basis = Parameter(torch.Tensor(nbit, in_channels), requires_grad=True)
-
-    # def QuantizedWeight(self, x, n, nbit=4):
-    #     """
-    #     Quantize weight.
-    #     Args:
-    #         x (tf.Tensor): a 4D tensor.
-    #             Must have known number of channels, but can have other unknown dimensions.
-    #         name (str): operator's name.
-    #         n (int or double): variance of weight initialization.
-    #         nbit (int): number of bits of quantized weight. Defaults to 2.
-    #     Returns:
-    #         tf.Tensor with attribute `variables`.
-    #     Variable Names:
-    #     * ``basis``: basis of quantized weight.
-    #     Note:
-    #         About multi-GPU training: moving averages across GPUs are not aggregated.
-    #         Batch statistics are computed by main training tower. This is consistent with most frameworks.
-    #     """
-    #     NORM_PPF_0_75 = 0.6745
-    #     MOVING_AVERAGES_FACTOR = 0.9
-    #     EPS = 0.0001
-    #     # num_filters = x.get_shape().as_list()[-1]
-    #     num_filters = x.shape[0]
-    #     # initialization of quantization levels, i/(2**nbits)
-    #     init_basis = []
-    #     base = NORM_PPF_0_75 * ((2. / n) ** 0.5) / (2 ** (nbit - 1))
-    #     for j in range(nbit):
-    #         init_basis.append([(2 ** j) * base for i in range(num_filters)])
-    #     # convert to tf variable, not necessary for pytorch
-    #     # init_basis = tf.constant_initializer(init_basis)
-    #     # bit_dims = [nbit, num_filters]
-    #     num_levels = 2 ** nbit
-    #     delta = EPS
-    #     # initialize level multiplier
-    #     init_level_multiplier = []
-    #     for i in range(num_levels):
-    #         level_multiplier_i = [0. for j in range(nbit)]
-    #         level_number = i
-    #         for j in range(nbit):
-    #             binary_code = level_number % 2
-    #             if binary_code == 0:
-    #                 binary_code = -1
-    #             level_multiplier_i[j] = float(binary_code)
-    #             level_number = level_number // 2
-    #         init_level_multiplier.append(level_multiplier_i)
-    #     # initialize threshold multiplier
-    #     init_thrs_multiplier = []
-    #     for i in range(1, num_levels):
-    #         thrs_multiplier_i = [0. for j in range(num_levels)]
-    #         thrs_multiplier_i[i - 1] = 0.5
-    #         thrs_multiplier_i[i] = 0.5
-    #         init_thrs_multiplier.append(thrs_multiplier_i)
-
-    #     level_codes = torch.Tensor(init_level_multiplier)
-    #     thrs_multiplier = torch.Tensor(init_thrs_multiplier)
-        
-    #     sum_multiplier= torch.Tensor(np.ones((1, torch.reshape(x, [-1, num_filters]).shape[0])))
-    #     sum_multiplier_basis = torch.Tensor(np.ones([1, nbit]))
-
-    #     # NOTE:I think this is not needed for putorch. check it!
-    #     # ctx = get_current_tower_context()  # current tower context
-    #     # calculate levels and sort
-        
-    #     levels = torch.matmul(level_codes, self.basis)
-        
-    #     levels, sort_id = torch.topk(torch.transpose(levels, 1, 0), num_levels)
-    #     levels = torch.flip(levels, [-1])
-    #     sort_id = torch.flip(sort_id, [-1])
-    #     levels = torch.transpose(levels, 1, 0)
-    #     sort_id = torch.transpose(sort_id, 1, 0)
-    #     # calculate threshold
-    #     thrs = torch.matmul(thrs_multiplier, levels)
-    #     # calculate level codes per channel
-    #     reshape_x = torch.reshape(x, [-1, num_filters])
-        
-    #     # level_codes_channelwise_dims = torch.stack([num_levels * num_filters, nbit])
-    #     # level_codes_channelwise = level_codes_channelwise_dims.fill_(0.)# tf.fill(level_codes_channelwise_dims, 0.)
-    #     level_codes_channelwise = torch.Tensor(num_levels * num_filters, nbit).fill_(0.)
-
-    #     for i in range(num_levels):
-    #         # eq = torch.equal(sort_id, i)
-    #         import pdb; pdb.set_trace()
-    #         eq = sort_id == i
-    #         level_codes_channelwise = torch.where(torch.reshape(eq, [-1]), level_codes_channelwise + level_codes[i], level_codes_channelwise)
-    #     level_codes_channelwise = torch.reshape(level_codes_channelwise, [num_levels, num_filters, nbit])
-    #     import pdb; pdb.set_trace()
-    #     # calculate output y and its binary code
-    #     # NOTE: check if the function zeros_like work properly
-    #     y = torch.zeros_like(x) + levels[0]  # output
-    #     zero_dims = torch.stack([torch.shape(reshape_x)[0] * num_filters, nbit])
-    #     bits_y = torch.fill(zero_dims, -1.)
-    #     zero_y = torch.zeros_like(x)
-    #     zero_bits_y = torch.fill(zero_dims, 0.)
-    #     zero_bits_y = torch.reshape(zero_bits_y, [-1, num_filters, nbit])
-    #     for i in range(num_levels - 1):
-    #         g = x.gt(thrs[i])# tf.greater(x, thrs[i])
-    #         y = torch.where(g, zero_y + levels[i + 1], y)
-    #         bits_y = torch.where(torch.reshape(g, [-1]), torch.reshape(zero_bits_y + level_codes_channelwise[i + 1], [-1, nbit]), bits_y)
-    #     bits_y = torch.reshape(bits_y, [-1, num_filters, nbit])
-    #     # training
-    #     # if ctx.is_main_training_tower:
-    #     BT = torch.permute(bits_y, 2, 0, 1)
-    #     # calculate BTxB
-    #     BTxB = []
-    #     for i in range(nbit):
-    #         for j in range(nbit):
-    #             BTxBij = torch.mul(BT[i], BT[j])
-    #             BTxBij = torch.matmul(sum_multiplier, BTxBij)
-    #             if i == j:
-    #                 mat_one = torch.ones([1, num_filters])
-    #                 BTxBij = BTxBij + (delta * mat_one)  # + E
-    #             BTxB.append(BTxBij)
-    #     BTxB = torch.reshape(torch.stack(values=BTxB), [nbit, nbit, num_filters])
-    #     # calculate inverse of BTxB
-    #     if nbit > 2:
-    #         BTxB_transpose = torch.permute(BTxB, 2, 0, 1)
-    #         BTxB_inv = torch.inverse(BTxB_transpose)
-    #         BTxB_inv = torch.permute(BTxB_inv, 1, 2, 0)
-    #     elif nbit == 2:
-    #         det = torch.mul(BTxB[0][0], BTxB[1][1]) - torch.mul(BTxB[0][1], BTxB[1][0])
-    #         inv = []
-    #         inv.append(BTxB[1][1] / det)
-    #         inv.append(-BTxB[0][1] / det)
-    #         inv.append(-BTxB[1][0] / det)
-    #         inv.append(BTxB[0][0] / det)
-    #         BTxB_inv = torch.reshape(torch.stack(values=inv), [nbit, nbit, num_filters])
-    #     elif nbit == 1:
-    #         BTxB_inv = torch.reciprocal(BTxB)
-    #     # calculate BTxX
-    #     BTxX = []
-    #     for i in range(nbit):
-    #         BTxXi0 = torch.mul(BT[i], reshape_x)
-    #         BTxXi0 = torch.matmul(sum_multiplier, BTxXi0)
-    #         BTxX.append(BTxXi0)
-    #     BTxX = torch.reshape(torch.stack(values=BTxX), [nbit, num_filters])
-    #     BTxX = BTxX + (delta * self.basis)  # + basis
-    #     # calculate new basis
-    #     new_basis = []
-    #     for i in range(nbit):
-    #         new_basis_i = torch.mul(BTxB_inv[i], BTxX)
-    #         new_basis_i = torch.matmul(sum_multiplier_basis, new_basis_i)
-    #         new_basis.append(new_basis_i)
-    #     new_basis = torch.reshape(torch.stack(values=new_basis), [nbit, num_filters])
-    #     # create moving averages op
-    #     # FIXME:how this moving average is used???
-    #     # updata_moving_basis = moving_averages.assign_moving_average(
-    #     #     basis, new_basis, MOVING_AVERAGES_FACTOR)
-    #     # add_model_variable(basis)
-    #     self.basis = self.basis.clone().detach() * (1-MOVING_AVERAGES_FACTOR) + new_basis * MOVING_AVERAGES_FACTOR
-    #     # calculate moving of basis
-    #     # tf.add_to_collection(tf.GraphKeys.UPDATE_OPS, updata_moving_basis)
-
-    #     y = x - x.clone().detach() + y .clone().detach()
-    #     # y = x + tf.stop_gradient(-x) + tf.stop_gradient(y)  # gradient: y=x
-    #     # y.variables = VariableHolder(basis=basis)
-    #     return y
     def forward(self, x):
         ih, iw = x.size()[-2:]
         kh, kw = self.weight.size()[-2:]
@@ -313,23 +151,23 @@ class WSConv2d_v1(nn.Conv2d):
         else:
             out = F.conv2d(x, self.weight.repeat([1,self.rep_time,1,1])[:,:x.shape[1],:,:], None, 1)
         return out
-class WSConv2d(nn.Conv2d):
+class NESConv2d(nn.Conv2d):
     def __init__(self, in_planes, out_channels,
                  kernel_size, stride=1, padding=0, dilation=1,
-                 groups=1, bias=True, multiplier = 1.0, rep_dim = 1, repeat_weight = True, use_coeff=False):
+                 groups=1, bias=True, multiplier = 1.0, spatial_multiplier = 1., rep_dim = 1, repeat_weight = True, use_coeff=False):
         if rep_dim == 0:
             # this is repeat along the channel dim (dimension 0 of the weights tensor)
-            super(WSConv2d, self).__init__(
+            super(NESConv2d, self).__init__(
                 int(in_planes), int(np.ceil(out_channels/ multiplier)),
-                kernel_size, stride=stride, padding=padding, dilation=dilation,
+                int(kernel_size * spatial_multiplier) , stride=stride, padding=padding, dilation=dilation,
                 groups=groups, bias=bias)
             self.rep_time = int(np.ceil(
             1. * out_channels / self.weight.shape[0]))
         elif rep_dim == 1:
             # this is to repeat along the filter dim(dimension 1 of the weights tensor)
-            super(WSConv2d, self).__init__(
+            super(NESConv2d, self).__init__(
                 int(np.ceil(in_planes/ multiplier)),int(out_channels), 
-                kernel_size, stride=stride, padding=padding, dilation=dilation,
+                int(kernel_size * spatial_multiplier), stride=stride, padding=padding, dilation=dilation,
                 groups=groups, bias=bias)
             self.rep_time = int(np.ceil(
             1. * in_planes / self.weight.shape[1]))
@@ -338,15 +176,33 @@ class WSConv2d(nn.Conv2d):
         self.out_channels_ori = out_channels
         self.groups = groups
         self.multiplier = multiplier
+        self.spatial_multiplier = spatial_multiplier
+        # specify the range for the w and h direction
+        self.kernel_size = kernel_size
+        self.w_wange = kernel_size * (spatial_multiplier-1)
+        self.h_wange = kernel_size * (spatial_multiplier-1)
+
         self.rep_dim = rep_dim
         self.repeat_weight = repeat_weight
         self.use_coeff = use_coeff
         # print(self.weight.shape)
         # import pdb; pdb.set_trace() 
-
-        self.conv1_stride_lr_1 = nn.Conv2d(in_planes, in_planes, kernel_size=3, stride=2, padding=0, bias=False)
-        self.conv1_stride_lr_2 = nn.Conv2d(in_planes, self.rep_time, kernel_size=1, stride=1, padding=0, bias=False)
-        self.coefficient = Parameter(torch.Tensor(self.rep_time), requires_grad=False)
+        if spatial_multiplier > 1:
+            out_num = int(self.rep_time * 3)
+            self.conv1_stride_lr_1 = nn.Conv2d(in_planes, in_planes, kernel_size=3, stride=2, padding=0, bias=False)
+            self.bn1 = nn.BatchNorm2d(in_planes)
+            self.relu = nn.ReLU6(inplace=True)
+            self.conv1_stride_lr_2 = nn.Conv2d(in_planes, out_num, kernel_size=1, stride=1, padding=0, bias=False)
+            self.bn2 = nn.BatchNorm2d(out_num)
+            self.coefficient = Parameter(torch.Tensor(out_num), requires_grad=False)
+        else:
+            out_num = int(self.rep_time)
+            self.conv1_stride_lr_1 = nn.Conv2d(in_planes, in_planes, kernel_size=3, stride=2, padding=0, bias=False)
+            self.bn1 = nn.BatchNorm2d(in_planes)
+            self.relu = nn.ReLU6(inplace=True)
+            self.conv1_stride_lr_2 = nn.Conv2d(in_planes, out_num, kernel_size=1, stride=1, padding=0, bias=False)
+            self.bn2 = nn.BatchNorm2d(out_num)
+            self.coefficient = Parameter(torch.Tensor(out_num), requires_grad=False)
         self.reuse = False
         self.coeff_grad = None
 
@@ -357,13 +213,27 @@ class WSConv2d(nn.Conv2d):
             return base_weight
         new_weight = []
         for i in range(rep_num):
+            w_idx = coeff(i*3 + 1) * self.w_wange
+            start_idx_w = int(w_idx)
+            end_idx_w = start_idx_w + self.kernel_size
+            w_frac = w_idx - start_idx_w
+
+            h_idx = coeff(i*3 + 2) * self.h_wange
+            start_idx_h = int(h_idx)
+            end_idx_h = start_idx_h + self.kernel_size
+            h_frac = h_idx - start_idx_h
+
+            new_weight_temp = torch.cat([base_weight[:,:,:,:],
+                base_weight[:,:,:,:]], dim=2)[:,:,start_idx_w:end_idx_w,:] * (1 - w_frac) + base_weight * w_frac
+            new_weight_temp = torch.cat([base_weight[:,:,:,:],
+                base_weight[:,:,:,:]], dim=3)[:,:,:,start_idx_h:end_idx_h] * (1 - h_frac) + base_weight * h_frac
             if dim == 0:
                 new_weight_temp = torch.cat([base_weight[1:,:,:,:],
-                    base_weight[0:1,:,:,:]], dim=0) * (1 - coeff[i])
+                    base_weight[0:1,:,:,:]], dim=0) * (1 - coeff[int(i*3)])
             else:
                 new_weight_temp = torch.cat([base_weight[:,1:,:,:],
                     base_weight[:,0:1,:,:]], dim=1) * (1 - coeff[i])
-            new_weight.append(base_weight * coeff[i] + new_weight_temp)
+            new_weight.append(base_weight * coeff[int(i*3)] + new_weight_temp)
         out = torch.cat(new_weight, dim=dim)
         
         if dim == 0:
@@ -372,9 +242,6 @@ class WSConv2d(nn.Conv2d):
             return out[:,:nchannel,:,:]
 
     def forward(self, x):
-        """
-            same padding as efficientnet tf version
-        """
         ih, iw = x.size()[-2:]
         kh, kw = self.weight.size()[-2:]
         sh, sw = self.stride
@@ -388,9 +255,9 @@ class WSConv2d(nn.Conv2d):
             if self.training:
                 # set reuse to True for coefficient sharing
                 if not self.reuse:
-                    lr_conv1 = self.conv1_stride_lr_1(x)
+                    lr_conv1 = self.relu(self.bn1(self.conv1_stride_lr_1(x)))
                     # pdb.set_trace()
-                    lr_conv1 = self.conv1_stride_lr_2(lr_conv1)
+                    lr_conv1 = self.bn2(self.conv1_stride_lr_2(lr_conv1))
                     lr_conv1 = F.adaptive_avg_pool2d(lr_conv1, (1,1))[:,:,0,0]
 
                     self.coefficient.set_(F.normalize(torch.mean(lr_conv1, 0), dim = 0).clone().detach())
@@ -408,7 +275,6 @@ class WSConv2d(nn.Conv2d):
                         # out = F.conv2d(x, self.generate_share_feature(self.rep_time, F.normalize(torch.mean(lr_conv1, 0), dim = 0)))
                 else:
                     if self.repeat_weight:
-                        
                         out = F.conv2d(x, self.generate_share_weight(
                         self.weight, self.rep_time,
                         self.coeff_grad, x.shape[1], dim=1))
