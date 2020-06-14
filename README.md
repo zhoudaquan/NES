@@ -36,4 +36,7 @@ To train the model from scratch, run the following code:
 
 bash run.sh
 
-##To do : add in pretrained models based on EfficientNet models
+##To do : 
+1. add in pretrained models based on EfficientNet models
+
+2. complete environment setup procedures.
