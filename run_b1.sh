@@ -1,2 +1,0 @@
-python train.py ../../imagenet/ILSVRC/Data/CLS-LOC/ --model efficientnet_b1_dq --num-gpu 1 -j 32 --lr 0.12 --drop 0.2 --img-size 224 --sched step --epochs 700 --decay-epochs 3 --decay-rate 0.97 --opt rmsproptf --warmup-epochs 5 --warmup-lr 1e-6 --weight-decay 1e-5 --opt-eps .001 --model-ema --batch-size 64 --log-interval 500 --fc_compress "group_fc" --enable_se --sampling --group_se --up_sampling_ratio 1.0 --resume
-./output/train/efficientnet_b1_77_5/model_best.pth.tar
