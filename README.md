@@ -30,3 +30,7 @@ To evaluate the model, simply load the model in the efficientnet_quant folder an
 bash run_validate.py
 
 To run the file, one needs to modify the data path to the imagenet data folder.
+
+## reproduce the results in the paper
+To train the model from scratch, run the following code:
+
