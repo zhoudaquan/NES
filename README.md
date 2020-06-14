@@ -1,4 +1,4 @@
-# Neural Epitome Search For Architecture Agnistic Compression
+# Neural Epitome Search For Architecture Agnistic Compression [ICLR_2020](https://openreview.net/forum?id=HyxjOyrKvr)
 
 ## Introduction
 This repo contains the code for the model compression chanllenge Hosted at [ICLR_2020](https://micronet-challenge.github.io/scoring_and_submission.html) regarding the ImageNet classification track.
