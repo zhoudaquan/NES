@@ -1,13 +1,5 @@
-from .inception_v4 import *
-from .inception_resnet_v2 import *
-from .densenet import *
-from .resnet import *
-from .dpn import *
 from .senet import *
-from .xception import *
-from .pnasnet import *
 from .gen_efficientnet import *
-from .inception_v3 import *
 from .gluon_resnet import *
 
 from .registry import *
