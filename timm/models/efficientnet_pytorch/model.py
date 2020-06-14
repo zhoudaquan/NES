@@ -65,7 +65,7 @@ class MBConvBlock(nn.Module):
                 if not sampling:
                     self._expand_conv = Conv2dSamePadding(in_channels=inp, out_channels=oup, kernel_size=1, bias=False)
                 else:
-                    self._expand_conv = WSConv2d_v1(inp, oup, kernel_size=1, bias=False, multiplier = multiplier1, rep_dim=0, use_coeff=False)
+                    self._expand_conv = WSConv2d(inp, oup, kernel_size=1, bias=False, multiplier = multiplier1, rep_dim=0, use_coeff=False)
                     # print(self._expand_conv)
                     # import pdb; pdb.set_trace()
         elif rm_first_1x1: 
@@ -104,7 +104,7 @@ class MBConvBlock(nn.Module):
         if not sampling:
             self._project_conv = Conv2dSamePadding(in_channels=oup, out_channels=final_oup, kernel_size=1, bias=False)
         else:
-            self._project_conv = WSConv2d_v1(oup, final_oup, kernel_size=1, bias=False, multiplier = multiplier2, rep_dim=1, use_coeff=False)
+            self._project_conv = WSConv2d(oup, final_oup, kernel_size=1, bias=False, multiplier = multiplier2, rep_dim=1, use_coeff=False)
         self._bn2 = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
         
         # self.last_bn = nn.BatchNorm2d(num_features=final_oup, momentum=self._bn_mom, eps=self._bn_eps)
@@ -254,7 +254,7 @@ class EfficientNet(nn.Module):
         in_channels = block_args.output_filters  # output of final block
         out_channels = round_filters(1280, self._global_params)
         if sampling:
-            self._conv_head = WSConv2d_v1(in_channels, out_channels, kernel_size=1, bias=False, multiplier = 4/2, rep_dim=1, use_coeff=False)
+            self._conv_head = WSConv2d(in_channels, out_channels, kernel_size=1, bias=False, multiplier = 4/2, rep_dim=1, use_coeff=False)
         else:
             self._conv_head = Conv2dSamePadding(in_channels, out_channels, kernel_size=1, bias=False)
         self._bn1 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
