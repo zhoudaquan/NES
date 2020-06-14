@@ -33,4 +33,6 @@ To run the file, one needs to modify the data path to the imagenet data folder.
 
 ## reproduce the results in the paper
 To train the model from scratch, run the following code:
+bash run.sh
 
+##To do : add in pretrained models based on EfficientNet models
