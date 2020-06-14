@@ -1466,6 +1466,10 @@ def efficientnet_b0(pretrained=False, num_classes=1000, in_chans=3, **kwargs):
 def efficientnet_b0_dq(pretained=False, num_classes=1000, in_chans=3, **kwargs):
     from .efficientnet_pytorch.model import EfficientNet
     return EfficientNet.from_name(model_name = 'efficientnet-b0', margs = kwargs['args'])
+@register_model
+def efficientnet_b1_dq(pretained=False, num_classes=1000, in_chans=3, **kwargs):
+    from .efficientnet_pytorch.model import EfficientNet
+    return EfficientNet.from_name(model_name = 'efficientnet-b1', margs = kwargs['args'])
 
 @register_model
 def efficientnet_b0_dq_ori(pretained=False, num_classes=1000, in_chans=3, **kwargs):
