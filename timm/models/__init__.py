@@ -1,6 +1,5 @@
 from .senet import *
 from .gen_efficientnet import *
-from .gluon_resnet import *
 
 from .registry import *
 from .factory import create_model
